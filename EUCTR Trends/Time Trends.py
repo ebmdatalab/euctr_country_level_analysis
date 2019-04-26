@@ -25,8 +25,15 @@ from matplotlib.pyplot import cm
 import matplotlib.colors as colors
 from datetime import date
 
+# +
 april_19 = pd.read_csv('euctr_april19.csv')
+
+for date in ['date_of_competent_authority_decision', 
+             'date_of_ethics_committee_opinion', 
+             'date_on_which_this_record_was_first_entered_in_the_eudract_data']:
+    april_19[date] = pd.to_datetime(april_19[date], errors='coerce')
 april_19.head()
+# -
 
 trial_counts = april_19['eudract_number'].groupby(april_19.trial_location).count()
 trial_counts
@@ -44,6 +51,8 @@ trial_counts
 
 def process_data(data, quarters=False, small_filter=False, small_def=1000, thrd_filter=False, p1_filter=True):
     excluded_list = []
+    start_quarter = pd.to_datetime('2008-01').to_period('Q')
+    end_quarter = pd.to_datetime('2019-01').to_period('Q')
     if small_filter:
         trial_counts = data['eudract_number'].groupby(data.trial_location).count()
         x = list(trial_counts[trial_counts < small_def].index)
@@ -68,8 +77,8 @@ def process_data(data, quarters=False, small_filter=False, small_def=1000, thrd_
     combined.columns = ['cad', 'ethics', 'entered']
     if quarters:
         combined.index.names = ['country', 'quarters']
-        combined = combined.query('quarters < 2019')
-        combined = combined.query('quarters >= 2008')
+        combined = combined.query('quarters < @end_quarter')
+        combined = combined.query('quarters >= @start_quarter')
         time_i = combined.index.get_level_values(1)
     elif not quarters:
         combined.index.names = ['country', 'years']
