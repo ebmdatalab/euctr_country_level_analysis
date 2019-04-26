@@ -7,9 +7,9 @@
 #       format_version: '1.4'
 #       jupytext_version: 1.1.1
 #   kernelspec:
-#     display_name: Python 3
+#     display_name: Python (euctr)
 #     language: python
-#     name: python3
+#     name: euctr
 # ---
 
 # To do:
@@ -111,7 +111,7 @@ all_pivoted_cad, all_pivoted_ethics, all_pivoted_entered = process_data(april_19
 
 pivoted_cad_q.columns
 
-pivoted_cad.head()
+pivoted_cad.tail()
 
 
 def which_countries(data, total_trials, greater_than=True, thrd_filter = True):
@@ -130,8 +130,21 @@ def which_countries(data, total_trials, greater_than=True, thrd_filter = True):
 
 included = which_countries(april_19, 4000)
 
-fig, ax = plt.subplots(figsize=(20,15), dpi = 100)
-pivoted_cad_q[included].plot(ax=ax)
+
+
+# +
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+sns.set_style("whitegrid",{'grid.color': '.9'})
+sns.set_palette("Set3",n_colors=14)
+
+# Reorder the columns by count in the last year
+df = pivoted_cad_q[included]
+df = df.reindex(df.loc['2018-01-01'].sort_values(ascending=False).index, axis=1)
+
+fig, ax = plt.subplots(figsize=(10,7), dpi = 100)
+df.plot(ax=ax, kind='area',  linewidth=0)
 plt.tick_params(axis='both', which='major', labelsize=13)
 plt.title("Trials by Competent Authority Decision Date - Quarters", pad=25, fontsize=25)
 ax.xaxis.set_label_text('')
@@ -142,9 +155,19 @@ ax.legend(loc=(.1,-.1), ncol = 7, fontsize = 20)
 ax.yaxis.grid(linestyle='--', linewidth=.25)
 ax.xaxis.grid(linestyle='--', linewidth=.25)
 plt.show()
+# -
 
+df = pivoted_cad[included]
+df.index
+
+# +
 fig, ax = plt.subplots(figsize=(20,15), dpi = 100)
-pivoted_cad[included].plot(ax=ax)
+
+# Reorder the columns by count in the last year
+df = pivoted_cad[included]
+df = df.reindex(df.loc[2018].sort_values(ascending=False).index, axis=1)
+
+df.plot(ax=ax, kind='area', linewidth=0)
 plt.tick_params(axis='both', which='major', labelsize=13)
 plt.title("Trials by Competent Authority Decision Date - Years", pad=25, fontsize=25)
 ax.xaxis.set_label_text('')
@@ -156,9 +179,14 @@ ax.yaxis.grid(linestyle='--', linewidth=.25)
 ax.xaxis.grid(linestyle='--', linewidth=.25)
 plt.show()
 
-fig, ax = plt.subplots(figsize=(20,15), dpi = 100)
-all_pivoted_cad.plot(ax=ax)
+# +
+fig, ax = plt.subplots(figsize=(12,8), dpi = 100)
 
+# Reorder the columns by count in the last year
+df = all_pivoted_cad.reindex(all_pivoted_cad.loc[2018].sort_values(ascending=False).index, axis=1)
+df.plot(ax=ax, kind='area', linewidth=0)
+
+# -
 
 # Scrap stuff - saving because I might need later or as a reference
 
