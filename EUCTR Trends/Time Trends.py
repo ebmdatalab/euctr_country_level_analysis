@@ -12,17 +12,9 @@
 #     name: euctr
 # ---
 
-# To do:
-#
-# 1. Filter out Phase 1 trials - Done
-# 2. Make a legible graph for all countries
-# 3. Data grouped by quarter - Done
-
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.pyplot import cm
-import matplotlib.colors as colors
 from datetime import date
 
 # +
@@ -111,7 +103,7 @@ all_pivoted_cad, all_pivoted_ethics, all_pivoted_entered = process_data(april_19
 
 pivoted_cad_q.columns
 
-pivoted_cad.tail()
+pivoted_cad.head()
 
 
 def which_countries(data, total_trials, greater_than=True, thrd_filter = True):
@@ -133,8 +125,6 @@ included = which_countries(april_19, 4000)
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-df.columns
-
 # +
 # Reorder the columns by count in the last year
 df = pivoted_cad_q[included]
@@ -155,7 +145,7 @@ df.plot(ax=ax, linewidth=8, color=colors)
 plt.tick_params(axis='both', which='major', labelsize=18)
 plt.title("Trials by Competent Authority Decision Date - Quarters", pad=25, fontsize=25)
 ax.xaxis.set_label_text('')
-ax.yaxis.set_label_text('# of Trials', fontsize=20)
+ax.yaxis.set_label_text('# of Trials', fontsize=25)
 ax.spines['top'].set_visible(False)
 ax.spines['right'].set_visible(False)
 ax.legend(loc=(.1,-.1), ncol = 7, fontsize = 20)
@@ -164,73 +154,29 @@ ax.xaxis.grid(linestyle='--', linewidth=.25)
 plt.show()
 # -
 
+# Reorder the columns by count in the last year
+df = pivoted_cad[included]
+cols = list(df.columns)
+
+# Put GB at the top
+cols.remove("GB")
+cols.append("GB")
+df = df.reindex(cols, axis=1)
+
+colors = sns.color_palette("pastel",n_colors=len(cols))
+
+
+colors[cols.index('GB')] = 'r'
+
 fig, ax = plt.subplots(figsize=(20,15), dpi = 100)
-pivoted_cad[included].plot(ax=ax, linewidth=8)
+df.plot(ax=ax, linewidth=8, color=colors)
 plt.tick_params(axis='both', which='major', labelsize=18)
 plt.title("Trials by Competent Authority Decision Date - Years", pad=25, fontsize=25)
-plt.xticks(rotation=25)
 ax.xaxis.set_label_text('')
-ax.yaxis.set_label_text('# of Trials', fontsize=20)
+ax.yaxis.set_label_text('# of Trials', fontsize=25)
 ax.spines['top'].set_visible(False)
 ax.spines['right'].set_visible(False)
 ax.legend(loc=(.1,-.1), ncol = 7, fontsize = 20)
 ax.yaxis.grid(linestyle='--', linewidth=.25)
 ax.xaxis.grid(linestyle='--', linewidth=.25)
 plt.show()
-
-fig, ax = plt.subplots(figsize=(20,15), dpi = 100)
-all_pivoted_cad.plot(ax=ax)
-
-
-# Scrap stuff - saving because I might need later or as a reference
-
-def plot_countries(name, dataset, quarters = False):
-    fig, ax = plt.subplots(figsize=(20,10))
-    ax.plot(dataset.loc[:, 'FR' ], label = 'FR')
-    ax.plot(dataset.loc[:, 'GB' ], label = 'GB')
-    ax.plot(dataset.loc[:, 'DE' ], label = 'DE')
-    ax.plot(dataset.loc[:, 'IT' ], label = 'IT')
-    ax.plot(dataset.loc[:, 'ES' ], label = 'ES')
-    ax.plot(dataset.loc[:, 'BE' ], label = 'BE')
-    ax.plot(dataset.loc[:, 'NL' ], label = 'NL')
-    ax.yaxis.grid(linestyle='--', linewidth=.25)
-    ax.xaxis.grid(linestyle='--', linewidth=.25)
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    plt.title(name, fontsize = 20)
-    plt.ylabel('# of Trials', fontsize=20)
-    plt.tick_params(axis='both', which='major', labelsize=15)
-    plt.legend(loc='best', fontsize = 15)
-    if quarters == False:
-        plt.xticks(np.arange(min(list(dataset.index)), max(list(dataset.index))+1, 1.0))
-    plt.show()
-
-
-def colormapgenerator(N, cm=None):
-    base = plt.cm.get_cmap(cm)
-    color_list = base(np.linspace(0, 1, N))
-    cm_name = base.name + str(N)
-    return base.from_list(cm_name, color_list, N)
-print(colormapgenerator(20,cm='jet'))
-
-pivoted_entered.plot(figsize=(15,20), colormap=colormapgenerator(20,cm='rainbow'))
-
-fig, ax = plt.subplots(figsize=(35,40), dpi = 100)
-ax.plot(pivoted_entered)
-ax.yaxis.grid(linestyle='--', linewidth=.25)
-ax.xaxis.grid(linestyle='--', linewidth=.25)
-ax.spines['top'].set_visible(False)
-ax.spines['right'].set_visible(False)
-plt.title("Trials by Date Entered on EudraCT", fontsize = 30)
-plt.ylabel('# of Trials', fontsize=20)
-plt.tick_params(axis='both', which='major', labelsize=15)
-plt.xticks(np.arange(min(years_list), max(years_list)+1, 1.0))
-box = ax.get_position()
-ax.set_position([box.x0, box.y0 + box.height * 0.1,
-                 box.width, box.height * 0.9])
-ax.legend(countries, loc='upper center', bbox_to_anchor=(0.5, -0.02),
-          fancybox=True, shadow=True, ncol=10, prop={'size':30})
-plt.show()
-
-#some potential discrete colors
-colors = ['#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', '#46f0f0', '#f032e6', '#bcf60c', '#fabebe', '#008080', '#e6beff', '#9a6324', '#fffac8', '#800000', '#aaffc3', '#808000', '#ffd8b1', '#000075', '#808080', '#BC8F8F', '#000000']
