@@ -1,21 +1,24 @@
 # ---
 # jupyter:
 #   jupytext:
+#     formats: ipynb,py:light
 #     text_representation:
 #       extension: .py
 #       format_name: light
 #       format_version: '1.4'
 #       jupytext_version: 1.1.1
 #   kernelspec:
-#     display_name: Python (euctr)
+#     display_name: Python 3
 #     language: python
-#     name: euctr
+#     name: python3
 # ---
 
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from datetime import date
+
+# # EUCTR
 
 # +
 #loading data and converting to datetime
@@ -26,8 +29,8 @@ for date in ['date_of_competent_authority_decision',
              'date_on_which_this_record_was_first_entered_in_the_eudract_data']:
     may_19[date] = pd.to_datetime(may_19[date], errors='coerce')
 may_19.head()
-
 # -
+
 #Getting an overview of all trials be country on the EUCTR
 trial_counts = may_19['eudract_number'].groupby(may_19.trial_location).count()
 trial_counts
@@ -105,9 +108,11 @@ pivoted_cad, pivoted_ethics, pivoted_entered = process_data(may_19, quarters=Fal
 all_pivoted_cad_q, all_pivoted_ethics_q, all_pivoted_entered_q = process_data(may_19, quarters=True, small_filter=False, thrd_filter=True)
 all_pivoted_cad, all_pivoted_ethics, all_pivoted_entered = process_data(may_19, quarters=False, small_filter=False, thrd_filter=True)
 
+#Checking the data
 pivoted_cad.head()
 
 
+# +
 #This function prepares which countries you would like to graph
 #It outputs a list of country abbreviations depending on the total_trials amount and whether you want greater or less than
 #thrd_filter removes trials from non EU countries.
@@ -125,11 +130,12 @@ def which_countries(data, total_trials, greater_than=True, thrd_filter = True):
         inc_states.remove('3rd')
     return inc_states
 included = which_countries(may_19, 4000)
+# -
 
+#importing seaborn for color palettes
 import seaborn as sns
 
 # +
-# Reorder the columns by count in the last year
 # Reorder the columns by count in the last year
 df = pivoted_cad_q[included]
 cols = list(df.columns)
@@ -153,12 +159,12 @@ ax.xaxis.set_label_text('')
 ax.yaxis.set_label_text('# of Trials', fontsize=25)
 ax.spines['top'].set_visible(False)
 ax.spines['right'].set_visible(False)
-ax.legend(loc=(.09,-.1), ncol = 8, fontsize = 20)
+ax.legend(labels = ['BEL', 'DEU', 'ESP', 'FRA', 'HUN', 'ITA', 'NLD', 'GBR'], loc=(.01,-.1), ncol = 8, fontsize = 20)
 ax.yaxis.grid(linestyle='--', linewidth=.25)
 ax.xaxis.grid(linestyle='--', linewidth=.25)
 plt.show()
-# -
 
+# +
 # Reorder the columns by count in the last year
 df = pivoted_cad[included]
 cols = list(df.columns)
@@ -182,10 +188,13 @@ ax.xaxis.set_label_text('')
 ax.yaxis.set_label_text('# of Trials', fontsize=25)
 ax.spines['top'].set_visible(False)
 ax.spines['right'].set_visible(False)
-ax.legend(loc=(.09,-.1), ncol = 8, fontsize = 20)
+ax.legend(labels = ['BEL', 'DEU', 'ESP', 'FRA', 'HUN', 'ITA', 'NLD', 'GBR'], loc=(.09,-.1), ncol = 8, fontsize = 20)
 ax.yaxis.grid(linestyle='--', linewidth=.25)
 ax.xaxis.grid(linestyle='--', linewidth=.25)
 plt.show()
+# -
+
+# # ClinicalTrials.gov
 
 ctgov = pd.read_csv('ctgv_trends.csv')
 
@@ -196,6 +205,8 @@ for date in ['start_date', 'submitted_date']:
 #Ensuring the data loaded correctly
 ctgov.head()
 
+
+# +
 #Prepared the ClinicalTrials.gov data for graphing
 #Options:
 #data is your dataset
@@ -228,6 +239,9 @@ def process_ctdata(data, country, quarters = False, times=['2012', '2019'], p1_f
         combined = combined.query('years >= {}'.format(times[0]))
     return combined
 
+
+# -
+
 #Helper function for graphing 2 countries against one another
 def graph(title, data1, data2):
     fig, ax = plt.subplots(figsize=(25,10), dpi = 100)
@@ -244,7 +258,8 @@ def graph(title, data1, data2):
     ax.xaxis.grid(linestyle='--', linewidth=.25)
     plt.show()
 
-start_date_year = "Trials Started: 2012-2018"
+
+start_date_year = "Trials Started on ClinicalTrials.gov: 2012-2018"
 uk = process_ctdata(ctgov,'United Kingdom', p1_filter=False)
 fr = process_ctdata(ctgov,'France', p1_filter=False)
 graph(start_date_year, uk.start, fr.start)
@@ -255,7 +270,7 @@ graph(start_date_year, uk_q.start, fr_q.start)
 
 with_filt = (ctgov.study_status != "Withdrawn")
 prosp_filt = (ctgov.start_date > ctgov.submitted_date)
-prosp_reg_year = "Prospective Registrations: 2012-2018"
+prosp_reg_year = "Prospective Registrations on ClinicalTrials.gov: 2012-2018"
 uk_qr = process_ctdata(ctgov[with_filt & prosp_filt],'United Kingdom', quarters=False, p1_filter=False)
 fr_qr = process_ctdata(ctgov[with_filt & prosp_filt],'France', quarters=False, p1_filter=False)
 graph(prosp_reg_year, uk_qr.submitted, fr_qr.submitted)
@@ -275,18 +290,20 @@ fig, ax = plt.subplots(figsize=(20,15), dpi = 100)
 be_qr.submitted.plot(ax=ax, linewidth=8, color=colors[0])
 de_qr.submitted.plot(ax=ax, linewidth=8, color=colors[1])
 es_qr.submitted.plot(ax=ax, linewidth=8, color=colors[2])
-fr_qrf.submitted.plot(ax=ax, linewidth=8, color=colors[3])
+fr_qr.submitted.plot(ax=ax, linewidth=8, color=colors[3])
 hu_qr.submitted.plot(ax=ax, linewidth=8, color=colors[4])
 it_qr.submitted.plot(ax=ax, linewidth=8, color=colors[5])
 nl_qr.submitted.plot(ax=ax, linewidth=8, color=colors[6])
-uk_qrf.submitted.plot(ax=ax, linewidth=8, color='red')
+uk_qr.submitted.plot(ax=ax, linewidth=8, color='red')
 plt.tick_params(axis='both', which='major', labelsize=18)
 plt.title(prosp_reg_year, pad=25, fontsize=25)
 ax.xaxis.set_label_text('')
 ax.yaxis.set_label_text('# of Trials', fontsize=25)
 ax.spines['top'].set_visible(False)
 ax.spines['right'].set_visible(False)
-ax.legend(labels = ['BE', 'DE', 'ES', 'FR', 'HU', 'IT', 'NL', 'GB'], loc=(.09,-.1), ncol = 8, fontsize = 20)
+ax.legend(labels = ['BEL', 'DEU', 'ESP', 'FRA', 'HUN', 'ITA', 'NLD', 'GBR'], loc=(.01,-.1), ncol = 8, fontsize = 20)
 ax.yaxis.grid(linestyle='--', linewidth=.25)
 ax.xaxis.grid(linestyle='--', linewidth=.25)
 plt.show()
+
+
